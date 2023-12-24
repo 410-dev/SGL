@@ -123,46 +123,44 @@ public abstract class SGLEntity implements SGLEntityInterface {
      * @return The relative deviation. 0.0 means the entity is at the center of the panel.
      */
     public double getRelativeDeviation(JPanel panel) {
-        int otherXCenter = panel.getX() + panel.getWidth() / 2;
-        int otherYCenter = panel.getY() + panel.getHeight() / 2;
-        int selfXCenter = this.panel.getX() + this.panel.getWidth() / 2;
-        int selfYCenter = this.panel.getY() + this.panel.getHeight() / 2;
-
-        int xDiff = Math.abs(otherXCenter - selfXCenter);
-        int yDiff = Math.abs(otherYCenter - selfYCenter);
-
-        int xMax = panel.getWidth() / 2;
-        int yMax = panel.getHeight() / 2;
-
-        double xDeviation = (double) xDiff / xMax;
-        double yDeviation = (double) yDiff / yMax;
-
-        return Math.max(xDeviation, yDeviation);
+        return getRelativeDeviationDistanceFromPoint1D(new int[]{this.getPanel().getX() + this.getPanel().getWidth()/2, this.getPanel().getY() + this.getPanel().getWidth()/2}, panel);
     }
 
-    public double[] getRelativeDeviationInVector(SGLEntity entity) {
-        return getRelativeDeviationInVector(entity.panel);
+    public double getRelativeDeviationDistanceFromPoint1D(int[] entityPoint2D, SGLEntity entity) {
+        return getRelativeDeviationDistanceFromPoint1D(entityPoint2D, entity.panel);
     }
 
-    public double[] getRelativeDeviationInVector(JPanel panel) {
-        int otherXCenter = panel.getX() + panel.getWidth() / 2;
-        int otherYCenter = panel.getY() + panel.getHeight() / 2;
-        int selfXCenter = this.panel.getX() + this.panel.getWidth() / 2;
-        int selfYCenter = this.panel.getY() + this.panel.getHeight() / 2;
+    public double getRelativeDeviationDistanceFromPoint1D(int[] entityPoint2D, JPanel panel) {
+        double[] distances = getRelativeDeviationDistanceFromPoint2D(entityPoint2D, panel);
+        return Math.sqrt(Math.pow(distances[0], 2) + Math.pow(distances[1], 2));
+    }
 
-        int xDiff = otherXCenter - selfXCenter;
-        int yDiff = otherYCenter - selfYCenter;
+    public double[] getRelativeDeviationDistanceFromPoint2D(int[] entityPoint2D, SGLEntity entity) {
+        return getRelativeDeviationDistanceFromPoint2D(entityPoint2D, entity.panel);
+    }
 
-        double magnitude = Math.sqrt(xDiff * xDiff + yDiff * yDiff);
-        double angle = Math.atan2(-yDiff, xDiff); // Invert yDiff since screen coordinates have y increasing downwards
+    public double[] getRelativeDeviationDistanceFromPoint2D(int[] entityPoint2D, JPanel panel) {
+        // Get X Y Center of jPanel
+        int xOther = panel.getX() + panel.getWidth()/2;
+        int yOther = panel.getY() + panel.getHeight()/2;
 
-        // Convert angle to degrees and adjust for coordinate system
-        angle = Math.toDegrees(angle);
-        if (angle < 0) {
-            angle += 360;
-        }
+        // Get X Y Center of entity
+        int xSelf = entityPoint2D[0];
+        int ySelf = entityPoint2D[1];
 
-        return new double[]{magnitude, angle};
+        // Get X Y difference
+        int xDiff = Math.abs(xOther - xSelf);
+        int yDiff = Math.abs(yOther - ySelf);
+
+        // Get X Y max
+        int xMax = panel.getWidth()/2;
+        int yMax = panel.getHeight()/2;
+
+        // Get X Y distance
+        double xDistance = (double) xDiff / xMax;
+        double yDistance = (double) yDiff / yMax;
+
+        return new double[]{xDistance, yDistance};
     }
 
 
