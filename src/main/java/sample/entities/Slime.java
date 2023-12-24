@@ -4,6 +4,7 @@ import me.hysong.sgl.SGLEntity;
 import me.hysong.sgl.interfaces.SGLEntityInterface;
 import me.hysong.sgl.panels.SGLCursor;
 import me.hysong.sgl.panels.SGLPanel;
+import sample.Main;
 
 import javax.swing.*;
 import java.awt.*;
@@ -33,19 +34,38 @@ public class Slime extends SGLEntity implements SGLEntityInterface {
         getInvolvedPanel().spawnRelatively(this, healthBar, 0, -healthBarOffset);
 
         this.addOverlappingEvent(SGLCursor.ENTITY_CODE, (entity, panel) -> {
-            int score = (int) ((int) entity.getOverlapPercentage(this) * (1+entity.getRelativeDeviationInVector(this)[0]));
+
+            // Get base score by click accuracy
+            int score = (int) (Main.player.getCurrentAttack() * Main.player.getLevel() * (double) (1 / entity.getRelativeDeviation(this)));
+
+            // Based on critical chance, amplify score
+            boolean crit = Main.player.getCriticalChance() > new Random().nextInt(0, 100);
+            if (crit) {
+                System.out.println("CRIT!");
+                double newScore = score * (1 + (double) Main.player.getCriticalAmplifier() /100);
+                System.out.println("Score updated from " + score + " to " + newScore);
+                score = (int) newScore;
+            }
+
+            // Update health
             health -= score;
             healthBar.updateHealthLvl(health);
 
-            getInvolvedPanel().spawnRelatively(this, new DamageText(String.valueOf(score), java.awt.Color.RED, getInvolvedPanel()), 0, -10);
+            // Spawn damage text
+            if (!crit)
+                getInvolvedPanel().spawnRelatively(this, new DamageText(String.valueOf(score), Color.RED, getInvolvedPanel()), 0, -20);
+            else
+                getInvolvedPanel().spawnRelatively(this, new DamageText("CRITICAL " + score, Color.MAGENTA, getInvolvedPanel()), 0, -20);
 
+            // Kill if health is below 0
             if (health < 0) {
                 animate.interrupt();
                 System.out.println("Slime_" + uniqueCode + " died!");
                 this.getPanel().setBackground(java.awt.Color.BLACK);
+
+                // Kill both the slime and its health bar
                 kill();
                 healthBar.kill();
-//                involvedPanel.getWindow().dropEntity("Slime_" + uniqueCode);
             }
         });
 
