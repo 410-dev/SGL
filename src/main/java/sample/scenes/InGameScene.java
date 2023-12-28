@@ -1,5 +1,6 @@
 package sample.scenes;
 
+import me.hysong.libhyextended.swingx.FastImage;
 import sample.entities.Slime;
 import lombok.Getter;
 import me.hysong.sgl.SGLEntity;
@@ -17,12 +18,20 @@ import java.util.Random;
 @Getter
 public class InGameScene extends SGLAreaClickablePanel {
 
-    private JPanel cursor;
-
     public InGameScene(SGLWindow window) {
-        super(window, 10, 10, false, new MouseAdapter[]{});
+        super(window, 20, 20, true, new MouseAdapter[]{});
+//        try {
+////            JPanel c = new FastImage("cursor.png", 20, 20).getPanel();
+////            c.setOpaque(false);
+////            c.setSize(20, 20);
+////            setCursor(c);
+//            setCursor("cursor.png");
+//        }catch (Exception e) {
+//            e.printStackTrace();
+//            setCursor();
+//        }
 
-        for(int i = 0; i < 1; i++) {
+        for(int i = 0; i < 5; i++) {
             Slime s = new Slime(this);
             s.setX(new Random().nextInt(500));
             s.setY(new Random().nextInt(500));
@@ -38,7 +47,6 @@ public class InGameScene extends SGLAreaClickablePanel {
                 Collections.reverse(overlappingEntities);
 
                 for (SGLEntity entity : overlappingEntities) {
-//                    System.out.println("Entity <" + entity.getEntityCode() + ">: " + entity.getOverlapPercentage(getClickedAreaEntity()) + ", RD: " + entity.getRelativeDeviation(getClickedAreaEntity()));
                     entity.runOverlappingEvent(getClickedAreaEntity());
                     break;
                 }
@@ -62,32 +70,6 @@ public class InGameScene extends SGLAreaClickablePanel {
                         System.exit(0);
                     }
                 }).start();
-            }
-        });
-
-        // Hovering Cursor, black outlined box with transparent fill
-        cursor = new JPanel();
-        cursor.setSize(10, 10);
-        cursor.setOpaque(true);
-        cursor.setLayout(null);
-        cursor.setBackground(new java.awt.Color(0, 0, 0, 255));
-        cursor.setForeground(new java.awt.Color(0, 0, 0, 255));
-        cursor.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-        cursor.setVisible(true);
-        addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                super.mouseEntered(e);
-                cursor.setLocation(e.getX() - 5, e.getY() - 5);
-                cursor.setVisible(true);
-                window.getContentPane().repaint();
-            }
-
-            @Override
-            public void mouseMoved(MouseEvent e) {
-                super.mouseMoved(e);
-                cursor.setLocation(e.getX() - 5, e.getY() - 5);
-                window.getContentPane().repaint();
             }
         });
     }
