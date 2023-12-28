@@ -6,6 +6,9 @@ import me.hysong.libhyextended.objects.dataobj2.DataObject2;
 import me.hysong.sgl.panels.SGLPanel;
 
 import javax.swing.*;
+import java.awt.*;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -31,7 +34,9 @@ public class SGLWindow extends DataObject2 {
         // If so, then instantiate it. Once instantiated, it automatically sets the panel.
         if (SGLPanel.class.isAssignableFrom(scene)) {
             try {
+                SGLSettings.log("Loading scene <" + scene.getName() + ">", SGLSettings.LogLevel.INFO);
                 SGLPanel panel = (SGLPanel) scene.getConstructor(SGLWindow.class).newInstance(this);
+                SGLSettings.log("Loaded scene <" + scene.getName() + "> successfully.", SGLSettings.LogLevel.INFO);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -70,6 +75,7 @@ public class SGLWindow extends DataObject2 {
             contents.get(name).setVisible(false);
             this.getContentPane().remove(contents.get(name));
             contents.remove(name);
+            SGLSettings.log("Dropped <" + name + "> successfully.", SGLSettings.LogLevel.INFO);
         } catch (NullPointerException e) {
             throw new RuntimeException("Panel is not set! Please set the panel first.");
         }
