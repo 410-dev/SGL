@@ -4,11 +4,14 @@ import lombok.Getter;
 import me.hysong.sgl.SGLEntity;
 import me.hysong.sgl.SGLWindow;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -17,11 +20,12 @@ public class SGLAreaClickablePanel implements SGLPanel {
 
     private JPanel panel;
     private JPanel clickedArea;
+    private JPanel cursor;
     private SGLEntity clickedAreaEntity;
 
     private boolean enableHitBoxDisplay;
-    private int clickAreaWidth;
-    private int clickAreaHeight;
+    private int clickAreaWidth = 10;
+    private int clickAreaHeight = 10;
 
     private SGLWindow window;
 
@@ -46,6 +50,65 @@ public class SGLAreaClickablePanel implements SGLPanel {
         setMouseListeners(mouseAdapters);
 
         this.panel.add(clickedArea);
+    }
+
+    public void setCursor() {
+        cursor = new JPanel();
+        cursor.setSize(clickAreaWidth, clickAreaHeight);
+        cursor.setOpaque(true);
+        cursor.setLayout(null);
+        cursor.setBackground(new java.awt.Color(0, 0, 0, 0));
+        cursor.setForeground(new java.awt.Color(0, 0, 0, 0));
+        cursor.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        cursor.setVisible(true);
+        setCursor(cursor);
+    }
+
+    public void setCursor(JPanel cursorPanel) {
+        cursor = cursorPanel;
+        panel.addMouseMotionListener(new MouseAdapter() {
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                super.mouseMoved(e);
+                cursor.setLocation(e.getX() - cursorPanel.getWidth()/2, e.getY() - cursorPanel.getHeight()/2);
+                cursor.setVisible(true);
+                window.getContentPane().repaint();
+            }
+        });
+        panel.add(cursor);
+    }
+
+    public void setCursor(String filePath) {
+        try {
+            JPanel cursorPanel = new JPanel();
+            cursorPanel.setSize(clickAreaWidth, clickAreaHeight);
+            cursorPanel.setOpaque(false);
+
+            // Load image from file to put on cursorPanel
+            // The size of the image should be the same as the size of the cursorPanel
+            BufferedImage cursorImage = ImageIO.read(new File(filePath));
+            BufferedImage resizedImage = new BufferedImage(cursorPanel.getWidth(), cursorPanel.getHeight(), BufferedImage.TYPE_INT_ARGB);
+            Graphics2D graphics2D = resizedImage.createGraphics();
+            graphics2D.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            graphics2D.drawImage(cursorImage, 0, 0, cursorPanel.getWidth(), cursorPanel.getHeight(), null);
+            graphics2D.dispose();
+
+            // Set the image as the background of the cursorPanel
+            cursorPanel.setBackground(new Color(0, 0, 0, 0));
+            cursorPanel.setForeground(new Color(0, 0, 0, 0));
+            cursorPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+            cursorPanel.setVisible(true);
+
+            JLabel cursorLabel = new JLabel(new ImageIcon(resizedImage));
+            cursorLabel.setSize(cursorPanel.getWidth(), cursorPanel.getHeight());
+            cursorLabel.setOpaque(false);
+            cursorLabel.setVisible(true);
+            cursorPanel.add(cursorLabel);
+
+            setCursor(cursorPanel);
+        }catch (Exception e) {
+
+        }
     }
 
     public void setClickAreaSize(boolean enableHitBoxDisplay, int clickAreaWidth, int clickAreaHeight) {
