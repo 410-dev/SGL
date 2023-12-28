@@ -6,6 +6,8 @@ import me.hysong.sgl.interfaces.SGLEntityRunnable;
 import me.hysong.sgl.panels.SGLPanel;
 
 import javax.swing.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.MouseAdapter;
 import java.util.HashMap;
 
 @Getter
@@ -19,6 +21,8 @@ public abstract class SGLEntity implements SGLEntityInterface {
     public static final String GENERAL_ENTITY = ".generic";
 
     private final HashMap<String, SGLEntityRunnable> overlapEvents = new HashMap<>();
+
+    private final HashMap<String, SGLEntityRunnable> eventHooks = new HashMap<>();
 
     public SGLEntity(String entityName, String entityCode, JPanel panel, SGLPanel involvedPanel) {
         if (entityCode.startsWith(".")) throw new RuntimeException("Entity code cannot start with a dot.");
@@ -195,7 +199,27 @@ public abstract class SGLEntity implements SGLEntityInterface {
         return (double) overlapArea / smallerArea * 100;
     }
 
+    public void addMouseEvent(MouseAdapter mouseAdapter) {
+        panel.addMouseListener(mouseAdapter);
+    }
+
+    public void addKeyboardEvent(KeyAdapter keyAdapter) {
+        panel.addKeyListener(keyAdapter);
+    }
+
     public void kill() {
+        SGLEntityRunnable killEvent = eventHooks.get("entity.event.kill");
+
+        if (killEvent != null) killEvent.runPriorAsync(this, involvedPanel);
+        if (killEvent != null) killEvent.runPrior(this, involvedPanel);
+
         involvedPanel.getWindow().dropEntity(entityName);
+
+        if (killEvent != null) killEvent.runPost(this, involvedPanel);
+        if (killEvent != null) killEvent.runPostAsync(this, involvedPanel);
+    }
+
+    public void onKill(SGLEntityRunnable runnable) {
+        eventHooks.put("entity.event.kill", runnable);
     }
 }
